@@ -1,0 +1,8 @@
+name: Single Language URL Prefix
+type: module
+description: 'Allow adding prefix in URL for single language sites.'
+package: Multilingual
+version: VERSION
+core: 8.x
+dependencies:
+  - drupal:language
