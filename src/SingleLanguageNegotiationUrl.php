@@ -59,8 +59,8 @@ class SingleLanguageNegotiationUrl implements InboundPathProcessorInterface, Out
     }
 
     $config = $this->config->get('language.negotiation')->get('url');
-
-    if ($config && $config['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
+    $source = $config['source'] ?? '';
+    if ($source === LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
       $parts = explode('/', trim($path, '/'));
       $prefix = array_shift($parts);
 
@@ -89,8 +89,8 @@ class SingleLanguageNegotiationUrl implements InboundPathProcessorInterface, Out
     }
 
     $config = $this->config->get('language.negotiation')->get('url');
-
-    if ($config && $config['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
+    $source = $config['source'] ?? '';
+    if ($source === LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
       $language = reset($languages);
 
       if (isset($config['prefixes'][$language->getId()])) {
