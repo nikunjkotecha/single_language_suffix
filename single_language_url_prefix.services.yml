@@ -4,4 +4,7 @@ services:
     tags:
       - { name: path_processor_inbound, priority: 500 }
       - { name: path_processor_outbound, priority: -1 }
-    arguments: ['@language_manager', '@config.factory']
+    arguments:
+      - '@language_manager'
+      - '@config.factory'
+      - '@path.matcher'

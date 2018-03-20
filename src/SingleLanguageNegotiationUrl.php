@@ -4,6 +4,7 @@ namespace Drupal\single_language_url_prefix;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Path\PathMatcherInterface;
 use Drupal\Core\PathProcessor\InboundPathProcessorInterface;
 use Drupal\Core\PathProcessor\OutboundPathProcessorInterface;
 use Drupal\Core\Render\BubbleableMetadata;
@@ -33,17 +34,35 @@ class SingleLanguageNegotiationUrl implements InboundPathProcessorInterface, Out
   protected $config;
 
   /**
+   * The path matcher.
+   *
+   * @var \Drupal\Core\Path\PathMatcherInterface
+   */
+  protected $pathMatcher;
+
+  /**
+   * Excluded paths from config.
+   *
+   * @var null|string
+   */
+  protected $excludedPaths = NULL;
+
+  /**
    * Constructs a SingleLanguageNegotiationUrl object.
    *
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   An alias manager for looking up the system path.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   The configuration factory.
+   * @param \Drupal\Core\Path\PathMatcherInterface $path_matcher
+   *   Path Matcher service.
    */
   public function __construct(LanguageManagerInterface $language_manager,
-                              ConfigFactoryInterface $config) {
+                              ConfigFactoryInterface $config,
+                              PathMatcherInterface $path_matcher) {
     $this->languageManager = $language_manager;
     $this->config = $config;
+    $this->pathMatcher = $path_matcher;
   }
 
   /**
@@ -54,7 +73,7 @@ class SingleLanguageNegotiationUrl implements InboundPathProcessorInterface, Out
 
     // We don't do anything if more then one language enabled.
     // That works by default.
-    if (count ($languages) > 1) {
+    if (count ($languages) > 1 || $this->isPathExcluded($path)) {
       return $path;
     }
 
@@ -84,7 +103,7 @@ class SingleLanguageNegotiationUrl implements InboundPathProcessorInterface, Out
 
     // We don't do anything if more then one language enabled.
     // That works by default.
-    if (count ($languages) > 1) {
+    if (count ($languages) > 1 || $this->isPathExcluded($path)) {
       return $path;
     }
 
@@ -99,6 +118,28 @@ class SingleLanguageNegotiationUrl implements InboundPathProcessorInterface, Out
     }
 
     return $path;
+  }
+
+  /**
+   * Helper function to check if current path is excluded or not.
+   *
+   * @param $path
+   *   Path to check.
+   *
+   * @return bool
+   *   TRUE if path is excluded.
+   */
+  protected function isPathExcluded($path) {
+    if (!isset($this->excludedPaths)) {
+      $config = $this->config->get('single_language_url_prefix.settings');
+      $this->excludedPaths = $config->get('excluded_paths') ?? '';
+    }
+
+    if (empty($this->excludedPaths)) {
+      return FALSE;
+    }
+
+    return (bool) $this->pathMatcher->matchPath($path, $this->excludedPaths);
   }
 
 }
